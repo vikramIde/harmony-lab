@@ -11,6 +11,7 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@harmony-js/core": "^0.1.50",
     "aes-js": "^3.1.2",
     "axios": "^0.18.0",
     "blake2b": "^2.1.3",

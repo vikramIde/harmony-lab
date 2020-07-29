@@ -26,6 +26,11 @@ const router =  new Router({
       path: '/crypto',
       name: 'crypto',
       component: Crypto 
+    },
+    {
+      path: '/harmony',
+      name: 'Harmony',
+      component: Crypto 
     }
   ]
 })
