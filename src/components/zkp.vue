@@ -8,11 +8,11 @@
 .fullbody {
   width: 500px;
 }
-.note{
+/* .note{
   border: 1px solid #80808030;
   color: #808080bf;
   background: #ffff001f;
-}
+} */
 </style>
 <template>
   <div class="asymmetric">

@@ -1,12 +1,43 @@
+<template>
+  <div class="home">
+    <div class="col-md-8 centeralign">
+      <b-card no-body style="padding: 20px">
+        <b-tabs content-class="mt-3">
+          <b-tab title="Introduction" active>
+            <Introduction/>
+          </b-tab>
+          <b-tab title="Account">
+            <Wallet />
+          </b-tab>
+          <b-tab title="Build Tx">
+            <BuildTx />
+          </b-tab>
+          <b-tab title="Sign Tx">
+            <Asymmetric />
+          </b-tab>
+          <b-tab title="Decode">
+            <ZKP />
+          </b-tab>
+          <b-tab title="Send">
+            <ZKP />
+          </b-tab>
+          <b-tab title="Contract">
+            <ZKP />
+          </b-tab>
+        </b-tabs>
+      </b-card>
+    </div>
+  </div>
+</template>
 <style scoped>
 .addmargin {
   margin-top: 10px;
   margin-bottom: 10px;
 }
 
-/* .vue-logo-back {
+.vue-logo-back {
   background-color: black;
-} */
+}
 
 .logo {
   width: 144px;
@@ -17,43 +48,18 @@
 }
 
 </style>
-<template>
-  <div class="home">
-    <div class="col-md-8 centeralign">
-      <b-card no-body style="padding: 20px">
-        <b-tabs content-class="mt-3">
-          <b-tab title="Introduction" active>
-            <Introduction/>
-          </b-tab>
-          <b-tab title="Hashing">
-            <Hash />
-          </b-tab>
-          <b-tab title="Symmetric">
-            <Symmetric />
-          </b-tab>
-          <b-tab title="Asymmetric">
-            <Asymmetric />
-          </b-tab>
-          <b-tab title="Zero Knowledge Proof">
-            <ZKP />
-          </b-tab>
-        </b-tabs>
-      </b-card>
-    </div>
-  </div>
-</template>
-
 <script>
-import Hash from "@/components/Hash.vue";
+import Wallet from "@/components/harmony/Wallet.vue";
+import BuildTx from "@/components/harmony/BuildTx.vue";
 import Asymmetric from "@/components/Asymmetric.vue";
 import Symmetric from "@/components/Symmetric.vue";
-import Introduction from "@/components/Introduction.vue";
+import Introduction from "@/components/harmony/Introduction.vue";
 import ZKP from "@/components/zkp.vue";
 export default {
   name: "PanelPage",
   components: {
-    Hash,
-    Asymmetric,
+    Wallet,
+    BuildTx,
     Symmetric,
     Introduction,
     ZKP

@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import Customers from './views/Customers.vue'
 import CustomerDetails from './views/CustomerDetails.vue'
 import Crypto from './views/Crypto.vue'
+import Harmony from './views/Harmony.vue'
 
 Vue.use(Router)
 
@@ -30,7 +31,7 @@ const router =  new Router({
     {
       path: '/harmony',
       name: 'Harmony',
-      component: Crypto 
+      component: Harmony 
     }
   ]
 })

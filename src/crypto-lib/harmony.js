@@ -1,5 +1,6 @@
 import { encryptPhrase, getAddress, decryptPhrase } from "@harmony-js/crypto";
-const { isValidAddress } = require("@harmony-js/utils");
+const { ChainID, ChainType, isValidAddress } = require("@harmony-js/utils");
+
 import { Harmony } from "@harmony-js/core";
 var currentNetwork = "";
 
@@ -77,6 +78,25 @@ export function generatePhrase() {
     return getHarmony().wallet.newMnemonic();
 }
 
+export async function generateKeyPair(){
+    let phrase = generatePhrase()
+    let account;
+    try {
+        account = getHarmony().wallet.addByMnemonic(phrase);
+        let address = getAddress(account.address).bech32;
+        let pvtKey = account.privateKey
+
+        return {
+            address,
+            pvtKey
+        }
+
+    } catch (e) {
+        console.log("createAccountFromMnemonic error = ", e);
+        return false;
+    }
+
+}
 export async function createAccountFromMnemonic(name, mnemonic, password) {
     let account;
     try {
