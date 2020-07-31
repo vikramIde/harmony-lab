@@ -1,4 +1,4 @@
-# Cryptography Tool
+# Harmony Lab
 
 A tool to play and learn basic concept of Harmony. Checkout the playgroung [here](https://vishwas1.github.io/crypto/index.html#/crypto)
 
