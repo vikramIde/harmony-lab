@@ -57,9 +57,6 @@ export default {
     };
   },
   methods: {
-    calculateHash: function() {
-      return symmetric.sha256hashStr(this.plaintext);
-    },
     sendTx(){
       harmony.sendTx(
         this.privateKey,

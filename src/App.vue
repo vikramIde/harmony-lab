@@ -39,7 +39,7 @@
   padding:0;
   min-height: 100% !important;
   height: 100% !important;
-  color: #2c3e50;
+  color:white;
 }
 
 #nav {

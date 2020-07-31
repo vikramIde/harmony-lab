@@ -1,8 +1,7 @@
 <template>
   <div class="home">
     <div class="col-md-8 centeralign">
-      <b-card no-body style="padding: 20px">
-        <b-tabs content-class="mt-3">
+       <b-tabs content-class="mt-3">
           <b-tab title="Introduction" active>
             <Introduction/>
           </b-tab>
@@ -24,7 +23,6 @@
           <b-tab title="Contract">
           </b-tab>
         </b-tabs>
-      </b-card>
     </div>
   </div>
 </template>

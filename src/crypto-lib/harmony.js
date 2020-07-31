@@ -77,17 +77,17 @@ export async function buildTx(
 ) {
     const gasPrice = network.default_gas_price.toFixed(9)
     const gasEstimate = network.contract_gas_estimate
-
+    const value = amount * 1000000
     const txn = harmony.transactions.newTx({
         from: new HarmonyAddress(fromAddress).checksum,
         to: new HarmonyAddress(toAddress).checksum,
-        value: Unit.Szabo(amount).toWei(),
+        value: Unit.Szabo(value).toWei(),
         shardID: 0,
         toShardID: 0,
         gasLimit: gasEstimate,
         gasPrice: Unit.One(gasPrice).toHex()
     })
-
+    console.log(txn)
     return txn
 }
 
@@ -136,12 +136,13 @@ export async function sendTx(
 ) {
     console.log('Starting - Sending - Tx')
     let signedTxn = await signTx(privateKey, rawTx, '' )
-    console.log(signedTxn)
+    let txHash
     signedTxn
         .observed()
         .on("transactionHash", (txnHash) => {
             console.log("--- hash ---");
             console.log(txnHash);
+            txHash = txnHash
         })
         .on("error", (error) => {
             return {
@@ -151,12 +152,12 @@ export async function sendTx(
         });
 
     const [sentTxn, id] = await signedTxn.sendTransaction();
-    debugger
+    
     const confiremdTxn = await sentTxn.confirm(id);
 
     var explorerLink;
     if (confiremdTxn.isConfirmed()) {
-        explorerLink = getNetworkLink("/tx/" + txnHash);
+        explorerLink = getNetworkLink("/tx/" + txHash);
     } else {
         return {
             result: false,
@@ -252,7 +253,6 @@ export function getAddressFromPrivateKey(privateKey) {
 export async function getBalance(address, shardId) {
     getHarmony().blockchain.messenger.setDefaultShardID(shardId);
     let ret = await getHarmony().blockchain.getBalance({ address });
-
     return ret.result;
 }
 

@@ -37,7 +37,7 @@
       </p>
       <div
         class="github-card"
-        data-github="vishwas1/crypto"
+        data-github="vikramIde/harmony-lab"
         data-width="400"
         data-height
         data-theme="default"

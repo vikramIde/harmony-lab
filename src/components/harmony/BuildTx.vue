@@ -72,8 +72,8 @@ export default {
     },
     buildTx(){
       harmony.buildTx(
-        this.sender,
         this.reciever,
+        this.sender,
         this.amount
         ).then(res=>{
           let  [unsignedRawTransaction, raw] = res.getRLPUnsigned();
