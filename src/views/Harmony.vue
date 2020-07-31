@@ -13,16 +13,15 @@
             <BuildTx />
           </b-tab>
           <b-tab title="Sign Tx">
-            <Asymmetric />
+            <SignTx />
           </b-tab>
           <b-tab title="Decode">
-            <ZKP />
+            <DecodeTx />
           </b-tab>
           <b-tab title="Send">
-            <ZKP />
+            <SendTx />
           </b-tab>
           <b-tab title="Contract">
-            <ZKP />
           </b-tab>
         </b-tabs>
       </b-card>
@@ -51,18 +50,19 @@
 <script>
 import Wallet from "@/components/harmony/Wallet.vue";
 import BuildTx from "@/components/harmony/BuildTx.vue";
-import Asymmetric from "@/components/Asymmetric.vue";
-import Symmetric from "@/components/Symmetric.vue";
+import SignTx from "@/components/harmony/SignTx.vue";
+import SendTx from "@/components/harmony/SendTx.vue";
+import DecodeTx from "@/components/harmony/Decode.vue";
 import Introduction from "@/components/harmony/Introduction.vue";
-import ZKP from "@/components/zkp.vue";
 export default {
   name: "PanelPage",
   components: {
     Wallet,
     BuildTx,
-    Symmetric,
-    Introduction,
-    ZKP
+    SignTx,
+    SendTx,
+    DecodeTx,
+    Introduction
   },
   data() {
     return {

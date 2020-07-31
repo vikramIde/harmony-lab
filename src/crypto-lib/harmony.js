@@ -1,7 +1,15 @@
-import { encryptPhrase, getAddress, decryptPhrase } from "@harmony-js/crypto";
-const { ChainID, ChainType, isValidAddress } = require("@harmony-js/utils");
-
+import { 
+    encryptPhrase, 
+    getAddress, 
+    decryptPhrase, 
+    HarmonyAddress,
+} from "@harmony-js/crypto";
+import { ChainID, ChainType, strip0x, isValidAddress, Unit  } from "@harmony-js/utils"
+import { StakingTransaction } from "@harmony-js/staking";
+import { recover } from "@harmony-js/transaction";
+import { Account } from "@harmony-js/account";
 import { Harmony } from "@harmony-js/core";
+
 var currentNetwork = "";
 
 export const RecoverCode = {
@@ -16,6 +24,13 @@ let network = {
     name: "Testnet",
     apiUrl: "https://api.s0.b.hmny.io",
     type: ChainType.Harmony,
+    default_gas_price: 1e-9, // Recommended
+    default_gas_estimate: 21000, // Recommended
+    contract_gas_estimate: 42000 // Recommended
+}
+export const FACTORYTYPE = {
+    STAKINGTRANSACTION: "staking",
+    TRANSACTION: 'transaction'
 }
 
 var harmony = new Harmony(
@@ -26,6 +41,136 @@ var harmony = new Harmony(
         chainId: network.chainId, //ChainID.HmyMainnet,
     }
 );
+// Test net account
+// sender: one15u5kn5k26tl7vla334m0w72ghjxkzddgw7mtuk
+// reciever: one1fumcmy285lh0jrp2svf2ksuxwdycwmj9wqr8p2
+// rawTx: 0xeb80843b9aca00825208808094964330f9bfd1d8fb88560ffa693e423a7dda8f9b86b5e620f4800080028080
+// pvtkey: 0xaaf84a67675bd2d2cfd8802e2b0ac0a2a10ac81d3e6575536983355f1389bf2c
+// Harmony Laboratory
+//Step 1 
+
+export async function generateKeyPair() {
+    let phrase = generatePhrase()
+    let account;
+    try {
+        account = getHarmony().wallet.addByMnemonic(phrase);
+        let address = getAddress(account.address).bech32;
+        let pvtKey = account.privateKey
+
+        return {
+            address,
+            pvtKey
+        }
+
+    } catch (e) {
+        console.log("createAccountFromMnemonic error = ", e);
+        return false;
+    }
+
+}
+
+//Step 2
+export async function buildTx(
+    toAddress,
+    fromAddress,
+    amount
+) {
+    const gasPrice = network.default_gas_price.toFixed(9)
+    const gasEstimate = network.contract_gas_estimate
+
+    const txn = harmony.transactions.newTx({
+        from: new HarmonyAddress(fromAddress).checksum,
+        to: new HarmonyAddress(toAddress).checksum,
+        value: Unit.Szabo(amount).toWei(),
+        shardID: 0,
+        toShardID: 0,
+        gasLimit: gasEstimate,
+        gasPrice: Unit.One(gasPrice).toHex()
+    })
+
+    return txn
+}
+
+//Step 3
+export async function signTx(
+    privateKey,
+    rawTx,
+    type
+) {
+    console.log('Starting - Signing - Tx')
+
+    let harmony = getHarmony();
+    // sign the transaction use wallet;
+    const account = harmony.wallet.addByPrivateKey(privateKey);
+    const newTxn = harmony.transactions.newTx();
+    newTxn.recover(rawTx);
+
+    await getShardInfo()
+    const signedTxn = await account.signTransaction(newTxn);
+
+    // if (type === FACTORYTYPE.TRANSACTION)
+    // {
+    //         signedTxn = await signer.signTransaction(
+    //         transaction ,
+    //         updateNonce,
+    //         encodeMode,
+    //         blockNumber
+    //     )
+    // }
+    console.log('FInish - Signing - Tx')
+
+    return signedTxn
+}
+
+//Step 4
+export async function decode(signedRawTx) {
+    let harmony = getHarmony();
+    const newTxn = harmony.transactions.newTx();
+    newTxn.recover(signedRawTx);
+    return newTxn
+}
+//Step 5 
+export async function sendTx(
+    privateKey,
+    rawTx,
+) {
+    console.log('Starting - Sending - Tx')
+    let signedTxn = await signTx(privateKey, rawTx, '' )
+    console.log(signedTxn)
+    signedTxn
+        .observed()
+        .on("transactionHash", (txnHash) => {
+            console.log("--- hash ---");
+            console.log(txnHash);
+        })
+        .on("error", (error) => {
+            return {
+                result: false,
+                mesg: "Failed to sign transaction",
+            };
+        });
+
+    const [sentTxn, id] = await signedTxn.sendTransaction();
+    debugger
+    const confiremdTxn = await sentTxn.confirm(id);
+
+    var explorerLink;
+    if (confiremdTxn.isConfirmed()) {
+        explorerLink = getNetworkLink("/tx/" + txnHash);
+    } else {
+        return {
+            result: false,
+            mesg: "Can not confirm transaction " + txnHash,
+        };
+    }
+
+    return {
+        result: true,
+        mesg: explorerLink,
+    };
+}
+
+// Harmony Lab ends here 
 
 export function getHarmony() {
     if (currentNetwork != network.name) {
@@ -43,6 +188,7 @@ export function getHarmony() {
 
     return harmony;
 }
+
 
 export function validatePrivateKey(privateKey) {
     try {
@@ -78,25 +224,6 @@ export function generatePhrase() {
     return getHarmony().wallet.newMnemonic();
 }
 
-export async function generateKeyPair(){
-    let phrase = generatePhrase()
-    let account;
-    try {
-        account = getHarmony().wallet.addByMnemonic(phrase);
-        let address = getAddress(account.address).bech32;
-        let pvtKey = account.privateKey
-
-        return {
-            address,
-            pvtKey
-        }
-
-    } catch (e) {
-        console.log("createAccountFromMnemonic error = ", e);
-        return false;
-    }
-
-}
 export async function createAccountFromMnemonic(name, mnemonic, password) {
     let account;
     try {

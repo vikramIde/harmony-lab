@@ -1,13 +1,3 @@
-<style scoped>
-.floatLeft {
-  float: left;
-}
-
-.floatRight {
-  float: right;
-}
-</style>
-
 <template>
   <div class="row">
     <div class="col-md-12">
@@ -35,7 +25,7 @@
               type="button"
               data-toggle="modal"
               ref="encrypt"
-              @click="operation('encrypt')"
+              @click="buildTx()"
               class="btn btn-primary"
             >Build Tx</button>
           </div>
@@ -52,6 +42,16 @@
   </div>
 </template>
 
+
+<style scoped>
+.floatLeft {
+  float: left;
+}
+
+.floatRight {
+  float: right;
+}
+</style>
 <script>
 const harmony = require("../../crypto-lib/harmony");
 
@@ -70,35 +70,16 @@ export default {
     calculateHash: function() {
       return symmetric.sha256hashStr(this.plaintext);
     },
-    operation: function(op) {
-      try {
-        let res = "";
-        if (this.secretkey) {
-          switch (op) {
-            case "encrypt":
-              if (this.plaintext != "") {
-                res = symmetric.encryptData(this.secretkey, this.plaintext);
-                this.ciphertext = res;
-              } else {
-                alert("Error: Plaintext is empty");
-              }
-              break;
-            case "decrypt":
-              if (this.ciphertext != "") {
-                res = symmetric.decryptData(this.secretkey, this.ciphertext);
-                this.plaintext = res;
-              } else {
-                alert("Error: Ciphertext is empty");
-              }
-              break;
-            default:
-          }
-        } else {
-          alert("Error: Secret Key or Plain Text is empty");
-        }
-      } catch (e) {
-        alert(`Error : ${e.message}`);
-      }
+    buildTx(){
+      harmony.buildTx(
+        this.sender,
+        this.reciever,
+        this.amount
+        ).then(res=>{
+          let  [unsignedRawTransaction, raw] = res.getRLPUnsigned();
+          
+          this.rawTx = unsignedRawTransaction
+        })
     }
   },
   computed: {
