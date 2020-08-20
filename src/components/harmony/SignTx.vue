@@ -50,7 +50,7 @@ export default {
   name: "HashPage",
   data() {
     return {
-      privateKey: "",
+      privateKey: "0xaaf84a67675bd2d2cfd8802e2b0ac0a2a10ac81d3e6575536983355f1389bf2c",
       rawTx: "",
       signedTx: "",
       txType:['staking','transaction']
@@ -63,7 +63,8 @@ export default {
         this.rawTx,
         'transaction'
         ).then(res=>{
-            this.signedTx = res.rawTransaction
+           const [signature, rawTransaction] = res
+            this.signedTx = rawTransaction
         })
     }
   },

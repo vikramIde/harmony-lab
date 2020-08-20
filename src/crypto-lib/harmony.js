@@ -7,9 +7,10 @@ import {
 } from "@harmony-js/crypto";
 import { ChainID, ChainType, isValidAddress, Unit  } from "@harmony-js/utils"
 // import { StakingTransaction } from "@harmony-js/staking";
-import { recover, getRLPUnsigned } from "./util";
+import { recover, getRLPUnsigned, RLPSign } from "./util";
 // import { Account } from "@harmony-js/account";
 import { Harmony } from "@harmony-js/core";
+const { toUtf8Bytes } = require('@harmony-js/contract');
 
 var currentNetwork = "";
 
@@ -96,7 +97,7 @@ export async function buildTx(
         toShardID: 0,
         gasLimit: gasEstimate,
         nounce:1,
-        data: data,
+        data: toUtf8Bytes(data),
         gasPrice: Unit.One(gasPrice).toHex()
     }
     console.log(txn)
@@ -113,29 +114,42 @@ export async function signTx(
 ) {
     console.log('Starting - Signing - Tx')
 
-    let harmony = getHarmony();
-    // sign the transaction use wallet;
-    const account = harmony.wallet.addByPrivateKey(privateKey);
-    const newTxn = harmony.transactions.newTx();
-    console.log(newTxn)
-    newTxn.recover(rawTx);
+    const [signature, rawTransaction] = RLPSign(rawTx, privateKey );
 
-    await getShardInfo()
-    const signedTxn = await account.signTransaction(newTxn);
+    console.log('FInish - Signing - Tx', rawTransaction)
 
-    // if (type === FACTORYTYPE.TRANSACTION)
-    // {
-    //         signedTxn = await signer.signTransaction(
-    //         transaction ,
-    //         updateNonce,
-    //         encodeMode,
-    //         blockNumber
-    //     )
-    // }
-    console.log('FInish - Signing - Tx')
-
-    return signedTxn
+    return [signature, rawTransaction]
 }
+// export async function signTx(
+//     privateKey,
+//     rawTx,
+//     type
+// ) {
+//     console.log('Starting - Signing - Tx')
+
+//     let harmony = getHarmony();
+//     // sign the transaction use wallet;
+//     const account = harmony.wallet.addByPrivateKey(privateKey);
+//     const newTxn = harmony.transactions.newTx();
+//     console.log(newTxn)
+//     newTxn.recover(rawTx);
+
+//     await getShardInfo()
+//     const signedTxn = await account.signTransaction(newTxn);
+
+//     // if (type === FACTORYTYPE.TRANSACTION)
+//     // {
+//     //         signedTxn = await signer.signTransaction(
+//     //         transaction ,
+//     //         updateNonce,
+//     //         encodeMode,
+//     //         blockNumber
+//     //     )
+//     // }
+//     console.log('FInish - Signing - Tx')
+
+//     return signedTxn
+// }
 
 //Step 4
 export async function decodex(signedRawTx) {

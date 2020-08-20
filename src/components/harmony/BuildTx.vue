@@ -59,10 +59,10 @@ export default {
   name: "HashPage",
   data() {
     return {
-      sender: "",
-      reciever: "",
-      amount: "",
-      payload: "",
+      sender: "one15u5kn5k26tl7vla334m0w72ghjxkzddgw7mtuk",
+      reciever: "one109tukavgk9h37z0vgpem30w7mkvznknvqlrjkw",
+      amount: "100",
+      payload: "Hello",
       rawTx: ""
     };
   },
@@ -74,7 +74,8 @@ export default {
       harmony.buildTx(
         this.reciever,
         this.sender,
-        this.amount
+        this.amount,
+        this.payload
         ).then(res=>{
           let  unsignedRawTransaction = res;
           this.rawTx = unsignedRawTransaction

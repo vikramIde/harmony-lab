@@ -11,11 +11,13 @@ import {
     keccak256,
     hexlify,
     BN,
+    sign,
     hexZeroPad,
     recoverAddress,
     getAddress,
     arrayify,
-    stripZeros
+    stripZeros,
+    splitSignature
 } from '@harmony-js/crypto';
 
 import { HttpProvider, Messenger } from '@harmony-js/network';
@@ -29,7 +31,7 @@ export const transactionFields = [
     { name: 'toShardID', length: 16, fix: false },
     { name: 'to', length: 20, fix: true },
     { name: 'value', length: 32, fix: false, transform: 'hex' },
-    { name: 'data', fix: false },
+    { name: 'data', fix: false, length: 45 },
     { name: 'from', length: 20, fix: true },
 
 ];
@@ -192,9 +194,11 @@ export const getRLPUnsigned = (txParams)  => {
 
     fields.forEach((field) => {
         let value = (txParams)[field.name] || [];
+        
         value = arrayify(
             hexlify(field.transform === 'hex' ? add0xToString(value.toString(16)) : value),
         );
+        
         // Fixed-width field
         if (field.fix === true && field.length && value.length !== field.length && value.length > 0) {
             throw new Error(`invalid length for ${field.name}`);
@@ -220,4 +224,28 @@ export const getRLPUnsigned = (txParams)  => {
     return [encode(raw), raw];
 }
 
+export const RLPSign = (unsignedRawTransaction, prv) => {
+    const raw = decode(unsignedRawTransaction)
+    const signature = sign(keccak256(unsignedRawTransaction), prv);
+    const signed = getRLPSigned(raw, signature);
+    return [signature, signed];
+}
 
+function getRLPSigned(raw, signature) {
+    // temp setting to be compatible with eth
+    const rawLength = 12;
+    const sig = splitSignature(signature);
+    let v = 27 + (sig.recoveryParam || 0);
+    if (raw.length === rawLength) {
+        raw.pop();
+        raw.pop();
+        raw.pop();
+        v += this.chainId * 2 + 8;
+    }
+
+    raw.push(hexlify(v));
+    raw.push(stripZeros(arrayify(sig.r) || []));
+    raw.push(stripZeros(arrayify(sig.s) || []));
+
+    return encode(raw);
+}
