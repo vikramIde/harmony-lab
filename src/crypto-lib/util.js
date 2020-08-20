@@ -36,15 +36,6 @@ export const transactionFields = [
 
 ];
 
-export const transactionFieldsETH = [
-    { name: 'nonce', length: 32, fix: false },
-    { name: 'gasPrice', length: 32, fix: false, transform: 'hex' },
-    { name: 'gasLimit', length: 32, fix: false, transform: 'hex' },
-    { name: 'to', length: 20, fix: true },
-    { name: 'value', length: 32, fix: false, transform: 'hex' },
-    { name: 'data', fix: false },
-];
-
 export const handleNumber = (value) => {
     if (isHex(value) && value === '0x') {
         return hexToNumber('0x00');
