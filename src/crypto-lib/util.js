@@ -4,7 +4,8 @@
  * @hidden
  */
 
-import { hexToNumber, isHex, isAddress, add0xToString, strip0x, ChainType } from '@harmony-js/utils';
+import { hexToNumber, isHex, isAddress, add0xToString, strip0x } from '@harmony-js/utils';
+
 import {
     decode,
     encode,
@@ -20,7 +21,6 @@ import {
     splitSignature
 } from '@harmony-js/crypto';
 
-import { HttpProvider, Messenger } from '@harmony-js/network';
 
 export const transactionFields = [
     { name: 'nonce', length: 32, fix: false },
@@ -173,10 +173,6 @@ export const sleep = async (ms) =>
 //     cxTrack = 'cxTrack',
 // }
 
-export const defaultMessenger = new Messenger(
-    new HttpProvider('http://localhost:9500'),
-    ChainType.Harmony,
-);
 
 /**
    *
