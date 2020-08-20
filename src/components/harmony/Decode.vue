@@ -55,7 +55,7 @@ export default {
   },
   methods: {
     decodeTx(){
-      harmony.decode(
+      harmony.decodex(
         this.rawTx,
         ).then(res=>{
             console.log(res)

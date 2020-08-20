@@ -76,8 +76,7 @@ export default {
         this.sender,
         this.amount
         ).then(res=>{
-          let  [unsignedRawTransaction, raw] = res.getRLPUnsigned();
-          
+          let  unsignedRawTransaction = res;
           this.rawTx = unsignedRawTransaction
         })
     }

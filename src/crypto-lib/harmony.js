@@ -3,11 +3,12 @@ import {
     getAddress, 
     decryptPhrase, 
     HarmonyAddress,
+
 } from "@harmony-js/crypto";
-import { ChainID, ChainType, strip0x, isValidAddress, Unit  } from "@harmony-js/utils"
-import { StakingTransaction } from "@harmony-js/staking";
-import { recover } from "@harmony-js/transaction";
-import { Account } from "@harmony-js/account";
+import { ChainID, ChainType, isValidAddress, Unit  } from "@harmony-js/utils"
+// import { StakingTransaction } from "@harmony-js/staking";
+import { recover, getRLPUnsigned } from "./util";
+// import { Account } from "@harmony-js/account";
 import { Harmony } from "@harmony-js/core";
 
 var currentNetwork = "";
@@ -43,17 +44,25 @@ var harmony = new Harmony(
 );
 // Test net account
 // sender: one15u5kn5k26tl7vla334m0w72ghjxkzddgw7mtuk
-// reciever: one1fumcmy285lh0jrp2svf2ksuxwdycwmj9wqr8p2
 // rawTx: 0xeb80843b9aca00825208808094964330f9bfd1d8fb88560ffa693e423a7dda8f9b86b5e620f4800080028080
 // pvtkey: 0xaaf84a67675bd2d2cfd8802e2b0ac0a2a10ac81d3e6575536983355f1389bf2c
 // Harmony Laboratory
+
+// Reciever 
+// PublickKey ; one109tukavgk9h37z0vgpem30w7mkvznknvqlrjkw
+// Private Key : 0x0f71f6db8186c28b6e6a47344c7655c12040b9bfc13ef85549925730f2c63549
+
+// TestNetUrl : https://explorer.testnet.harmony.one/#/tx/
+
 //Step 1 
 
 export async function generateKeyPair() {
-    let phrase = generatePhrase()
+    // let phrase = generatePhrase()
+    let phrase = `mango club state husband keen fiber float jelly major include horse infant square spike equip caught version must pen swim setup right poem economy`
     let account;
     try {
         account = getHarmony().wallet.addByMnemonic(phrase);
+        console.log(account)
         let address = getAddress(account.address).bech32;
         let pvtKey = account.privateKey
 
@@ -73,22 +82,27 @@ export async function generateKeyPair() {
 export async function buildTx(
     toAddress,
     fromAddress,
-    amount
+    amount,
+    data
 ) {
     const gasPrice = network.default_gas_price.toFixed(9)
     const gasEstimate = network.contract_gas_estimate
     const value = amount * 1000000
-    const txn = harmony.transactions.newTx({
+    const txn = {
         from: new HarmonyAddress(fromAddress).checksum,
         to: new HarmonyAddress(toAddress).checksum,
         value: Unit.Szabo(value).toWei(),
         shardID: 0,
         toShardID: 0,
         gasLimit: gasEstimate,
+        nounce:1,
+        data: data,
         gasPrice: Unit.One(gasPrice).toHex()
-    })
+    }
     console.log(txn)
-    return txn
+    let [unsignedRawTransaction,raw] = getRLPUnsigned(txn)
+    console.log(unsignedRawTransaction, raw)
+    return unsignedRawTransaction
 }
 
 //Step 3
@@ -103,6 +117,7 @@ export async function signTx(
     // sign the transaction use wallet;
     const account = harmony.wallet.addByPrivateKey(privateKey);
     const newTxn = harmony.transactions.newTx();
+    console.log(newTxn)
     newTxn.recover(rawTx);
 
     await getShardInfo()
@@ -123,11 +138,38 @@ export async function signTx(
 }
 
 //Step 4
-export async function decode(signedRawTx) {
-    let harmony = getHarmony();
-    const newTxn = harmony.transactions.newTx();
-    newTxn.recover(signedRawTx);
+export async function decodex(signedRawTx) {
+    let newTxn = recover(signedRawTx)
     return newTxn
+}
+
+// export async function decodex(signedRawTx) {
+//     let harmony = getHarmony();
+//     const newTxn = harmony.transactions.newTx();
+//     newTxn.recover(signedRawTx);
+//     console.log(decode(signedRawTx))
+//     return newTxn
+// }
+
+export  function decodeTx(transaction) {
+    let rawTx
+    try {
+        rawTx = bs64check.decode(transaction.replace('tx_', ''))
+
+        return rawTx
+    } catch (error) {
+        //
+    }
+
+    try {
+        rawTx = bs58check.decode(transaction.replace('tx_', ''))
+
+        return rawTx
+    } catch (error) {
+        //
+    }
+
+    throw new Error('invalid TX-encoding')
 }
 //Step 5 
 export async function sendTx(
