@@ -7,7 +7,7 @@ import {
 } from "@harmony-js/crypto";
 import { ChainID, ChainType, isValidAddress, Unit  } from "@harmony-js/utils"
 // import { StakingTransaction } from "@harmony-js/staking";
-import { recover, getRLPUnsigned, RLPSign } from "./util";
+import { recover, getRLPUnsigned, RLPSign, sendRawTx } from "./util";
 // import { Account } from "@harmony-js/account";
 import { Harmony } from "@harmony-js/core";
 const { toUtf8Bytes } = require('@harmony-js/contract');
@@ -94,13 +94,12 @@ export async function buildTx(
         to: new HarmonyAddress(toAddress).checksum,
         value: Unit.Szabo(value).toWei(),
         shardID: 0,
-        toShardID: 0,
+        toShardID: 3,
         gasLimit: gasEstimate,
-        nounce:1,
+        nonce:1,
         data: toUtf8Bytes(data),
         gasPrice: Unit.One(gasPrice).toHex()
     }
-    console.log(txn)
     let [unsignedRawTransaction,raw] = getRLPUnsigned(txn)
     console.log(unsignedRawTransaction, raw)
     return unsignedRawTransaction
@@ -165,67 +164,57 @@ export async function decodex(signedRawTx) {
 //     return newTxn
 // }
 
-export  function decodeTx(transaction) {
-    let rawTx
-    try {
-        rawTx = bs64check.decode(transaction.replace('tx_', ''))
 
-        return rawTx
-    } catch (error) {
-        //
-    }
-
-    try {
-        rawTx = bs58check.decode(transaction.replace('tx_', ''))
-
-        return rawTx
-    } catch (error) {
-        //
-    }
-
-    throw new Error('invalid TX-encoding')
-}
 //Step 5 
 export async function sendTx(
     privateKey,
     rawTx,
 ) {
-    console.log('Starting - Sending - Tx')
-    let signedTxn = await signTx(privateKey, rawTx, '' )
-    let txHash
-    signedTxn
-        .observed()
-        .on("transactionHash", (txnHash) => {
-            console.log("--- hash ---");
-            console.log(txnHash);
-            txHash = txnHash
-        })
-        .on("error", (error) => {
-            return {
-                result: false,
-                mesg: "Failed to sign transaction",
-            };
-        });
-
-    const [sentTxn, id] = await signedTxn.sendTransaction();
-    
-    const confiremdTxn = await sentTxn.confirm(id);
-
-    var explorerLink;
-    if (confiremdTxn.isConfirmed()) {
-        explorerLink = getNetworkLink("/tx/" + txHash);
-    } else {
-        return {
-            result: false,
-            mesg: "Can not confirm transaction " + txnHash,
-        };
-    }
-
-    return {
-        result: true,
-        mesg: explorerLink,
-    };
+    let x = await sendRawTx(rawTx)
+    console.log(x)
+    return x
 }
+
+// export async function sendTx(
+//     privateKey,
+//     rawTx,
+// ) {
+//     console.log('Starting - Sending - Tx')
+//     let signedTxn = await signTx(privateKey, rawTx, '' )
+//     let txHash
+//     signedTxn
+//         .observed()
+//         .on("transactionHash", (txnHash) => {
+//             console.log("--- hash ---");
+//             console.log(txnHash);
+//             txHash = txnHash
+//         })
+//         .on("error", (error) => {
+//             return {
+//                 result: false,
+//                 mesg: "Failed to sign transaction",
+//             };
+//         });
+
+//     const [sentTxn, id] = await signedTxn.sendTransaction();
+    
+//     const confiremdTxn = await sentTxn.confirm(id);
+
+//     var explorerLink;
+//     if (confiremdTxn.isConfirmed()) {
+//         explorerLink = getNetworkLink("/tx/" + txHash);
+//     } else {
+//         return {
+//             result: false,
+//             mesg: "Can not confirm transaction " + txnHash,
+//         };
+//     }
+
+//     return {
+//         result: true,
+//         mesg: explorerLink,
+//     };
+// }
 
 // Harmony Lab ends here 
 

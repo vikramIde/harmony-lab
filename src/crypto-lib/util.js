@@ -20,7 +20,11 @@ import {
     stripZeros,
     splitSignature
 } from '@harmony-js/crypto';
-
+import {
+    RPCMethod,
+    Messenger,
+    HttpProvider
+} from '@harmony-js/network';
 
 export const transactionFields = [
     { name: 'nonce', length: 32, fix: false },
@@ -32,7 +36,7 @@ export const transactionFields = [
     { name: 'to', length: 20, fix: true },
     { name: 'value', length: 32, fix: false, transform: 'hex' },
     { name: 'data', fix: false, length: 45 },
-    { name: 'from', length: 20, fix: true },
+    { name: 'from', length: 20, fix: true }
 
 ];
 
@@ -175,13 +179,12 @@ export const sleep = async (ms) =>
    */
 export const getRLPUnsigned = (txParams)  => {
     const raw = [];
+    console.log(txParams, 'txParams')
 
     // temp setting to be compatible with eth
     const fields = transactionFields;
-
     fields.forEach((field) => {
         let value = (txParams)[field.name] || [];
-        
         value = arrayify(
             hexlify(field.transform === 'hex' ? add0xToString(value.toString(16)) : value),
         );
@@ -207,7 +210,6 @@ export const getRLPUnsigned = (txParams)  => {
         raw.push('0x');
         raw.push('0x');
     }
-
     return [encode(raw), raw];
 }
 
@@ -217,7 +219,23 @@ export const RLPSign = (unsignedRawTransaction, prv) => {
     const signed = getRLPSigned(raw, signature);
     return [signature, signed];
 }
+export const sendRawTx = async (signedTx) => {
+    let shardID = 0
+    let messenger = new Messenger(
+        new HttpProvider('https://api.s0.b.hmny.io')
+        )
+    const result = await messenger.send(
+        RPCMethod.SendRawTransaction,
+        [signedTx],
+        'hmy',
+        typeof shardID === 'string'
+            ? Number.parseInt(shardID, 10)
+            : shardID,
+    );
+    console.log(result)
+    return result;
 
+}
 function getRLPSigned(raw, signature) {
     // temp setting to be compatible with eth
     const rawLength = 12;
