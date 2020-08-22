@@ -49,6 +49,10 @@ var harmony = new Harmony(
 // pvtkey: 0xaaf84a67675bd2d2cfd8802e2b0ac0a2a10ac81d3e6575536983355f1389bf2c
 // Harmony Laboratory
 
+//Test 2 account
+//sender: one15cahsfs9mveqekme9jwqxr55pmhek2m9qdkg9u
+// privatekey : 0x5906b34bd8d7954835a248017f6a9d1eaed8480a48fd0d1e0e11eae9c79d691d
+
 // Reciever 
 // PublickKey ; one109tukavgk9h37z0vgpem30w7mkvznknvqlrjkw
 // Private Key : 0x0f71f6db8186c28b6e6a47344c7655c12040b9bfc13ef85549925730f2c63549
@@ -94,9 +98,10 @@ export async function buildTx(
         to: new HarmonyAddress(toAddress).checksum,
         value: Unit.Szabo(value).toWei(),
         shardID: 0,
-        toShardID: 3,
+        toShardID: 0,
+        chainId:2,
         gasLimit: gasEstimate,
-        nonce:1,
+        nonce:3,
         data: toUtf8Bytes(data),
         gasPrice: Unit.One(gasPrice).toHex()
     }

@@ -59,8 +59,8 @@ export default {
   name: "HashPage",
   data() {
     return {
-      sender: "one15u5kn5k26tl7vla334m0w72ghjxkzddgw7mtuk",
-      reciever: "one109tukavgk9h37z0vgpem30w7mkvznknvqlrjkw",
+      sender: "one15cahsfs9mveqekme9jwqxr55pmhek2m9qdkg9u",
+      reciever: "one15u5kn5k26tl7vla334m0w72ghjxkzddgw7mtuk",
       amount: "100",
       payload: "Hello",
       rawTx: ""

@@ -50,7 +50,7 @@ export default {
   name: "HashPage",
   data() {
     return {
-      privateKey: "0xaaf84a67675bd2d2cfd8802e2b0ac0a2a10ac81d3e6575536983355f1389bf2c",
+      privateKey: "0x5906b34bd8d7954835a248017f6a9d1eaed8480a48fd0d1e0e11eae9c79d691d",
       rawTx: "",
       signedTx: "",
       txType:['staking','transaction']

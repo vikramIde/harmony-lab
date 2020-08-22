@@ -36,7 +36,7 @@ export const transactionFields = [
     { name: 'to', length: 20, fix: true },
     { name: 'value', length: 32, fix: false, transform: 'hex' },
     { name: 'data', fix: false, length: 45 },
-    { name: 'from', length: 20, fix: true }
+    // { name: 'from', length: 20, fix: true }
 
 ];
 
@@ -65,9 +65,7 @@ export const recover = (rawTransaction) => {
     console.log(transaction,'recover')
     const tx = {
         id: '0x',
-        from: handleAddress(transaction[8]) !== '0x'
-            ? getAddress(handleAddress(transaction[8])).checksum
-            : '0x',
+        from:'0x',
         rawTransaction: '0x',
         unsignedRawTransaction: '0x',
         nonce: new BN(strip0x(handleNumber(transaction[0]))).toNumber(),
@@ -91,19 +89,19 @@ export const recover = (rawTransaction) => {
     };
 
     // Legacy unsigned transaction
-    if (transaction.length === 9) {
+    if (transaction.length === 8) {
         tx.unsignedRawTransaction = rawTransaction;
         return tx;
     }
 
     try {
-        tx.signature.v = new BN(strip0x(handleNumber(transaction[9]))).toNumber();
+        tx.signature.v = new BN(strip0x(handleNumber(transaction[8]))).toNumber();
     } catch (error) {
         throw error;
     }
 
-    tx.signature.r = hexZeroPad(transaction[10], 32);
-    tx.signature.s = hexZeroPad(transaction[11], 32);
+    tx.signature.r = hexZeroPad(transaction[9], 32);
+    tx.signature.s = hexZeroPad(transaction[10], 32);
 
     if (
         new BN(strip0x(handleNumber(tx.signature.r))).isZero() &&
@@ -220,10 +218,11 @@ export const RLPSign = (unsignedRawTransaction, prv) => {
     return [signature, signed];
 }
 export const sendRawTx = async (signedTx) => {
-    let shardID = 0
+    let shardID = 0 //take it as dynamic
     let messenger = new Messenger(
         new HttpProvider('https://api.s0.b.hmny.io')
         )
+    console.log(RPCMethod)
     const result = await messenger.send(
         RPCMethod.SendRawTransaction,
         [signedTx],
@@ -238,14 +237,15 @@ export const sendRawTx = async (signedTx) => {
 }
 function getRLPSigned(raw, signature) {
     // temp setting to be compatible with eth
-    const rawLength = 12;
+    const rawLength = 11;
+    const chainId= 2
     const sig = splitSignature(signature);
     let v = 27 + (sig.recoveryParam || 0);
     if (raw.length === rawLength) {
         raw.pop();
         raw.pop();
         raw.pop();
-        v += this.chainId * 2 + 8;
+        v += chainId * 2 + 8;
     }
 
     raw.push(hexlify(v));
