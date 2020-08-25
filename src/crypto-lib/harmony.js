@@ -101,7 +101,7 @@ export async function buildTx(
         toShardID: 0,
         chainId:2,
         gasLimit: gasEstimate,
-        nonce:3,
+        nonce:4,
         data: toUtf8Bytes(data),
         gasPrice: Unit.One(gasPrice).toHex()
     }
@@ -124,36 +124,7 @@ export async function signTx(
 
     return [signature, rawTransaction]
 }
-// export async function signTx(
-//     privateKey,
-//     rawTx,
-//     type
-// ) {
-//     console.log('Starting - Signing - Tx')
 
-//     let harmony = getHarmony();
-//     // sign the transaction use wallet;
-//     const account = harmony.wallet.addByPrivateKey(privateKey);
-//     const newTxn = harmony.transactions.newTx();
-//     console.log(newTxn)
-//     newTxn.recover(rawTx);
-
-//     await getShardInfo()
-//     const signedTxn = await account.signTransaction(newTxn);
-
-//     // if (type === FACTORYTYPE.TRANSACTION)
-//     // {
-//     //         signedTxn = await signer.signTransaction(
-//     //         transaction ,
-//     //         updateNonce,
-//     //         encodeMode,
-//     //         blockNumber
-//     //     )
-//     // }
-//     console.log('FInish - Signing - Tx')
-
-//     return signedTxn
-// }
 
 //Step 4
 export async function decodex(signedRawTx) {
@@ -161,13 +132,6 @@ export async function decodex(signedRawTx) {
     return newTxn
 }
 
-// export async function decodex(signedRawTx) {
-//     let harmony = getHarmony();
-//     const newTxn = harmony.transactions.newTx();
-//     newTxn.recover(signedRawTx);
-//     console.log(decode(signedRawTx))
-//     return newTxn
-// }
 
 
 //Step 5 
@@ -318,161 +282,3 @@ export function checkAddress(address) {
     return isValidAddress(address);
 }
 
-export async function transferToken(
-    receiver,
-    fromShard,
-    toShard,
-    amount,
-    privateKey,
-    gasLimit = "21000",
-    gasPrice = 1
-) {
-    let harmony = getHarmony();
-
-    //1e18
-    const txn = harmony.transactions.newTx({
-        //  token send to
-        to: receiver,
-        // amount to send
-        value: new harmony.utils.Unit(amount)
-            .asEther()
-            .toWei()
-            .toString(),
-        // gas limit, you can use string
-        gasLimit: gasLimit,
-        // send token from shardID
-        shardID:
-            typeof fromShard === "string"
-                ? Number.parseInt(fromShard, 10)
-                : fromShard,
-        // send token to toShardID
-        toShardID:
-            typeof toShard === "string" ? Number.parseInt(toShard, 10) : toShard,
-        // gas Price, you can use Unit class, and use Gwei, then remember to use toWei(), which will be transformed to BN
-        gasPrice: new harmony.utils.Unit(gasPrice)
-            .asGwei()
-            .toWei()
-            .toString(),
-    });
-    // update the shard information
-    await getShardInfo();
-
-    // sign the transaction use wallet;
-    const account = harmony.wallet.addByPrivateKey(privateKey);
-    const signedTxn = await account.signTransaction(txn);
-
-    signedTxn
-        .observed()
-        .on("transactionHash", (txnHash) => {
-            console.log("--- hash ---");
-            console.log(txnHash);
-        })
-        .on("error", (error) => {
-            return {
-                result: false,
-                mesg: "Failed to sign transaction",
-            };
-        });
-
-    const [sentTxn, txnHash] = await signedTxn.sendTransaction();
-    const confiremdTxn = await sentTxn.confirm(txnHash);
-
-    var explorerLink;
-    if (confiremdTxn.isConfirmed()) {
-        explorerLink = getNetworkLink("/tx/" + txnHash);
-    } else {
-        return {
-            result: false,
-            mesg: "Can not confirm transaction " + txnHash,
-        };
-    }
-
-    return {
-        result: true,
-        mesg: explorerLink,
-    };
-}
-
-export async function getTransfers(
-    address,
-    pageIndex,
-    pageSize,
-    order = "DESC"
-) {
-    let harmony = getHarmony();
-    const ret = await harmony.messenger.send(
-        "hmy_getTransactionsHistory",
-        [
-            {
-                address: address,
-                pageIndex: pageIndex,
-                pageSize: pageSize,
-                fullTx: true,
-                txType: "ALL",
-                order,
-            },
-        ],
-        harmony.messenger.chainPrefix,
-        harmony.messenger.getCurrentShardID()
-    );
-
-    return ret.result;
-}
-
-export async function getTransactionCount(addr) {
-    let harmony = getHarmony();
-
-    // const ret = await harmony.blockchain.getTransactionCount( {address: 'one1zksj3evekayy90xt4psrz8h6j2v3hla4qwz4ur'})
-    const ret = await harmony.blockchain.getTransactionCount({ address: addr });
-
-    return parseInt(ret.result);
-}
-
-export function getNetworkLink(currentNetwork, path) {
-    var basic;
-    switch (currentNetwork) {
-        case "Mainnet": {
-            basic = "https://explorer.harmony.one/#";
-            break;
-        }
-        case "Pangaea": {
-            basic = "https://explorer.pangaea.harmony.one/#";
-            break;
-        }
-        case "Testnet": {
-            basic = "https://explorer.testnet.harmony.one/#";
-            break;
-        }
-        case "OpensSakingNet": {
-            basic = "https://explorer.os.hmny.io/#";
-            break;
-        }
-        case "Localnet": {
-            basic = "";
-            break;
-        }
-        case "PartnerNet": {
-            basic = "https://explorer.ps.hmny.io/#";
-            break;
-        }
-        default: {
-            basic = "https://explorer.harmony.one/#";
-            break;
-        }
-    }
-
-    return basic + path;
-}
-
-export function removeDups(myList) {
-    let unique = {};
-    var newList = [];
-    myList.forEach(function (i) {
-        if (!unique[i.blockHash]) {
-            unique[i.blockHash] = true;
-            newList.push(i);
-        }
-    });
-
-    return newList;
-}
