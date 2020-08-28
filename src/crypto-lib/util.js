@@ -4,7 +4,7 @@
  * @hidden
  */
 
-import { hexToNumber, isHex, isAddress, add0xToString, strip0x } from '@harmony-js/utils';
+import { hexToNumber, isHex, isAddress, add0xToString, strip0x, AddressSuffix } from '@harmony-js/utils';
 
 import {
     decode,
@@ -59,6 +59,36 @@ export const handleAddress = (value) => {
         return '0x';
     }
 };
+export const getShardBalance = async (address,shardID, blockNumber = 'latest') =>{
+    let messenger = new Messenger(
+        new HttpProvider('https://api.s0.b.hmny.io')
+    )
+    const balance = await messenger.send(
+        RPCMethod.GetBalance,
+        [address, blockNumber],
+        'hmy',
+        shardID,
+    );
+
+    const nonce = await messenger.send(
+        RPCMethod.GetTransactionCount,
+        [address, blockNumber],
+        'hmy',
+        shardID,
+    );
+
+    if (balance.isError()) {
+        throw balance.error.message;
+    }
+    if (nonce.isError()) {
+        throw nonce.error.message;
+    }
+    return {
+        address: `${address}${AddressSuffix}${shardID}`,
+        balance: hexToNumber(balance.result),
+        nonce: Number.parseInt(hexToNumber(nonce.result), 10),
+    };
+}
 
 export const recover = (rawTransaction) => {
     const transaction = decode(rawTransaction);

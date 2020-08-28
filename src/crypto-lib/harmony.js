@@ -7,7 +7,7 @@ import {
 } from "@harmony-js/crypto";
 import { ChainID, ChainType, isValidAddress, Unit  } from "@harmony-js/utils"
 // import { StakingTransaction } from "@harmony-js/staking";
-import { recover, getRLPUnsigned, RLPSign, sendRawTx } from "./util";
+import { recover, getRLPUnsigned, RLPSign, sendRawTx, getShardBalance } from "./util";
 // import { Account } from "@harmony-js/account";
 import { Harmony } from "@harmony-js/core";
 const { toUtf8Bytes } = require('@harmony-js/contract');
@@ -84,6 +84,37 @@ export async function generateKeyPair() {
 }
 
 //Step 2
+// export async function buildTx(
+//     toAddress,
+//     fromAddress,
+//     amount,
+//     data
+// ) {
+//     const gasPrice = network.default_gas_price.toFixed(9)
+//     const gasEstimate = network.contract_gas_estimate
+//     const value = amount * 1000000
+//     console.log(new HarmonyAddress(fromAddress).checksum,'from')
+
+//     const txn = {
+//         from: getAddress(fromAddress).checksum,
+//         to: getAddress(toAddress).checksum,
+//         value: Unit.Szabo(value).toWei(),
+//         // value: '0x64',
+//         shardID: 0,
+//         toShardID: 0,
+//         chainId:2,
+//         gasLimit: gasEstimate,
+//         nonce:4,
+//         data: toUtf8Bytes(data),
+//         gasPrice: Unit.One(gasPrice).asGwei().toWei()
+//     }
+//     let tx = getHarmony().transactions.newTx(txn);
+//     // let [unsignedRawTransaction,raw] = getRLPUnsigned(txn)
+//     let [unsignedRawTransaction,raw] = tx.getRLPUnsigned()
+//     console.log(unsignedRawTransaction, raw)
+//     return unsignedRawTransaction
+// }
+//Step 2
 export async function buildTx(
     toAddress,
     fromAddress,
@@ -93,15 +124,21 @@ export async function buildTx(
     const gasPrice = network.default_gas_price.toFixed(9)
     const gasEstimate = network.contract_gas_estimate
     const value = amount * 1000000
+    const shardBalanceObject = await getShardBalance(
+        getAddress(fromAddress).checksum,
+        0,
+        'latest',
+    )
+        
     const txn = {
-        from: new HarmonyAddress(fromAddress).checksum,
-        to: new HarmonyAddress(toAddress).checksum,
+        from: getAddress(fromAddress).checksum,
+        to: getAddress(toAddress).checksum,
         value: Unit.Szabo(value).toWei(),
         shardID: 0,
         toShardID: 0,
         chainId:2,
         gasLimit: gasEstimate,
-        nonce:4,
+        nonce: shardBalanceObject.nonce,
         data: toUtf8Bytes(data),
         gasPrice: Unit.One(gasPrice).toHex()
     }
@@ -111,6 +148,30 @@ export async function buildTx(
 }
 
 //Step 3
+// export async function signTx(
+//     privateKey,
+//     rawTx,
+//     type
+// ) {
+//     console.log('Starting - Signing - Tx')
+//     // let txnObject = recover(rawTx)
+//     let harmony = getHarmony()
+//     const sender = harmony.wallet.addByPrivateKey(privateKey);
+
+//     // harmony.wallet.addByPrivateKey(
+//     //     privateKey,
+//     // );
+//     const txn = harmony.transactions.newTx();
+//     txn.recover(rawTx);
+//     let signed = await harmony.wallet.signTransaction(txn, undefined,undefined,false);
+
+//     // const [signature, rawTransaction] = RLPSign(rawTx, privateKey );
+
+//     console.log('FInish - Signing - Tx', signed)
+
+//     return [signed.signature, signed.rawTransaction]
+// }
+// //Step 3
 export async function signTx(
     privateKey,
     rawTx,
